@@ -43,8 +43,6 @@ val root = project.in(file("."))
     mimaPreviousArtifacts := Set("io.circe" %% "circe-bson" % previousCirceBsonVersion),
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core" % circeVersion,
-      "io.circe" %% "circe-jawn" % circeVersion % Test,
-      "io.circe" %% "circe-generic" % circeVersion % Test,
       "io.circe" %% "circe-testing" % circeVersion % Test,
       "org.reactivemongo" %% "reactivemongo-bson" % reactiveMongoVersion
     ),
