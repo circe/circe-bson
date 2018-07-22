@@ -1,28 +1,26 @@
 package io.circe.bson
 
-import io.circe.Json
-import io.circe.testing.instances._
+import io.circe.{ Json, JsonNumber }
+import io.circe.testing.ArbitraryInstances
 import org.scalatest.FunSuite
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import reactivemongo.bson.BSONDecimal
+import scala.util.{ Failure, Success, Try }
 
-class BsonCodecInstancesTest extends FunSuite with GeneratorDrivenPropertyChecks {
-  private def badJsonNumber(json: Json): Boolean = json.fold(
-    false,
-    _ => false,
-    n => BSONDecimal.parse(n.toString).isFailure,
-    _ => false,
-    v => v.exists(badJsonNumber),
-    o => o.toVector.map(_._2).exists(badJsonNumber)
-  )
+class BsonCodecInstancesTest extends FunSuite with GeneratorDrivenPropertyChecks with ArbitraryInstances {
+  /**
+   * Note that we zero out JSON number values whose string representation can't
+   * be parsed by `BSONDecimal`.
+   */
+  override def transformJsonNumber(n: JsonNumber): JsonNumber =
+    Try(BSONDecimal.parse(n.toString)).flatten match {
+      case Success(_) => n
+      case Failure(_) => JsonNumber.fromString("0").get
+    }
 
   test("BsonCodecInstances should round-trip JSON values") {
     forAll { (json: Json) =>
-      val converted = jsonToBson(json).right.flatMap(bsonToJson)
-
-      whenever(!badJsonNumber(json)) {
-        assert(Right(json) === converted)
-      }
+      assert(Right(json) === jsonToBson(json).right.flatMap(bsonToJson))
     }
   }
 }
