@@ -15,8 +15,8 @@ val compilerOptions = Seq(
   "-Xfuture"
 )
 
-val circeVersion = "0.9.3"
-val reactiveMongoVersion = "0.14.0"
+val circeVersion = "0.10.0"
+val reactiveMongoVersion = "0.16.0"
 val previousCirceBsonVersion = "0.1.0"
 
 val baseSettings = Seq(
@@ -28,7 +28,7 @@ val baseSettings = Seq(
     _.filterNot(Set("-Ywarn-unused-import"))
   },
   coverageHighlighting := true,
-  coverageScalacPluginVersion := "1.3.0",
+  coverageScalacPluginVersion := "1.3.1",
   (scalastyleSources in Compile) ++= (unmanagedSourceDirectories in Compile).value
 )
 
