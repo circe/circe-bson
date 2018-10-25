@@ -55,7 +55,11 @@ trait BsonCodecInstances {
     case BSONJavaScriptWS(value) => Right(Json.fromString(value))
     case BSONMaxKey              => Left(readerFailure(bson))
     case BSONMinKey              => Left(readerFailure(bson))
-    case BSONObjectID(_)         => Left(readerFailure(bson))
+    case id: BSONObjectID        =>
+      BSONObjectID.parse(id.stringify) match {
+        case Success(value) => Right(Json.fromString(value.stringify))
+        case Failure(error) => Left(error)
+      }
     case BSONBinary(_, _)        => Left(readerFailure(bson))
     case BSONDBPointer(_, _)     => Left(readerFailure(bson))
     case BSONRegex(_, _)         => Left(readerFailure(bson))
@@ -96,7 +100,7 @@ trait BsonCodecInstances {
         }.right.map(BSONDocument(_))
     }
 
-  final def jsonToBson(json: Json): Either[Throwable, BSONValue] = json.foldWith(jsonFolder) 
+  final def jsonToBson(json: Json): Either[Throwable, BSONValue] = json.foldWith(jsonFolder)
 
   implicit final lazy val jsonBsonReader: BSONReader[BSONValue, Json] = new BSONReader[BSONValue, Json] {
     final def read(bson: BSONValue): Json = bsonToJson(bson) match {
