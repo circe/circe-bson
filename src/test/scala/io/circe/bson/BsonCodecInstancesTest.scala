@@ -19,7 +19,7 @@ class BsonCodecInstancesTest extends FunSuite with GeneratorDrivenPropertyChecks
     }
 
   test("BsonCodecInstances should round-trip JSON values") {
-    forAll { (json: Json) =>
+    forAll { json: Json =>
       assert(Right(json) === jsonToBson(json).right.flatMap(bsonToJson))
     }
   }
