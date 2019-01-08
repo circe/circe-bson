@@ -17,7 +17,7 @@ request.
 
 ## License
 
-circe-fs2 is licensed under the **[Apache License, Version 2.0][apache]**
+circe-bson is licensed under the **[Apache License, Version 2.0][apache]**
 (the "License"); you may not use this software except in compliance with the
 License.
 
