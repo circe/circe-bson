@@ -16,7 +16,7 @@ val compilerOptions = Seq(
 )
 
 val circeVersion = "0.11.1"
-val reactiveMongoVersion = "0.17.0"
+val reactiveMongoVersion = "0.17.1"
 val previousCirceBsonVersion = "0.3.0"
 
 val baseSettings = Seq(
