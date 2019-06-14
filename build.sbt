@@ -7,25 +7,44 @@ val compilerOptions = Seq(
   "-language:existentials",
   "-language:higherKinds",
   "-unchecked",
-  "-Yno-adapted-args",
   "-Ypartial-unification",
   "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-unused-import",
-  "-Xfuture"
+  "-Ywarn-numeric-widen"
 )
 
 val circeVersion = "0.11.1"
 val reactiveMongoVersion = "0.17.1"
+
+val scalaTestVersion = "3.1.0-SNAP13"
+val scalaTestPlusVersion = "1.0.0-SNAP8"
+
 val previousCirceBsonVersion = "0.3.0"
+
+def priorTo2_13(scalaVersion: String): Boolean =
+  CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, minor)) if minor < 13 => true
+    case _                              => false
+}
 
 val baseSettings = Seq(
   scalacOptions ++= compilerOptions,
+  scalacOptions ++= (
+    if (priorTo2_13(scalaVersion.value))
+      Seq(
+        "-Xfuture",
+        "-Yno-adapted-args",
+        "-Ywarn-unused-import"
+      )
+    else
+      Seq(
+        "-Ywarn-unused:imports"
+      )
+  ),
   scalacOptions in (Compile, console) ~= {
-    _.filterNot(Set("-Ywarn-unused-import"))
+    _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
   },
   scalacOptions in (Test, console) ~= {
-    _.filterNot(Set("-Ywarn-unused-import"))
+    _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
   },
   coverageHighlighting := true,
   (scalastyleSources in Compile) ++= (unmanagedSourceDirectories in Compile).value
@@ -43,7 +62,9 @@ val root = project.in(file("."))
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-testing" % circeVersion % Test,
-      "org.reactivemongo" %% "reactivemongo-bson" % reactiveMongoVersion
+      "org.reactivemongo" %% "reactivemongo-bson" % reactiveMongoVersion,
+      "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
+      "org.scalatestplus" %% "scalatestplus-scalacheck" % scalaTestPlusVersion % Test
     ),
     ghpagesNoJekyll := true,
     docMappingsApiDir := "api",

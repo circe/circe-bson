@@ -2,12 +2,12 @@ package io.circe.bson
 
 import io.circe.{ Json, JsonNumber }
 import io.circe.testing.ArbitraryInstances
-import org.scalatest.FunSuite
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import reactivemongo.bson.BSONDecimal
 import scala.util.{ Failure, Success, Try }
 
-class BsonCodecInstancesTest extends FunSuite with GeneratorDrivenPropertyChecks with ArbitraryInstances {
+class BsonCodecInstancesTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks with ArbitraryInstances {
   /**
    * Note that we zero out JSON number values whose string representation can't
    * be parsed by `BSONDecimal`.
