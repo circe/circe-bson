@@ -7,13 +7,12 @@ val compilerOptions = Seq(
   "-language:existentials",
   "-language:higherKinds",
   "-unchecked",
-  "-Ypartial-unification",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen"
 )
 
-val circeVersion = "0.11.1"
-val reactiveMongoVersion = "0.17.1"
+val circeVersion = "0.12.0-M3"
+val reactiveMongoVersion = "0.18.0"
 
 val scalaTestVersion = "3.1.0-SNAP13"
 val scalaTestPlusVersion = "1.0.0-SNAP8"
@@ -33,7 +32,8 @@ val baseSettings = Seq(
       Seq(
         "-Xfuture",
         "-Yno-adapted-args",
-        "-Ywarn-unused-import"
+        "-Ywarn-unused-import",
+        "-Ypartial-unification"
       )
     else
       Seq(
