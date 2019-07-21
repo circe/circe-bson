@@ -117,8 +117,8 @@ trait BsonCodecInstances {
                 case Some(bdt) => Right(bdt)
                 case None =>
                   Left(
-                    TypeDoesNotMatch(
-                      "Unable to convert JsonObject with $date to BSONDateTime, for key: %s".format(key)))
+                    TypeDoesNotMatch("Unable to convert JsonObject with $date to BSONDateTime, for key: %s".format(key))
+                  )
               }
             case (key, json) => json.foldWith(self).right.map(key -> (_: BSONValue))
           }
