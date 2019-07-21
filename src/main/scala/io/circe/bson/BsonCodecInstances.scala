@@ -4,6 +4,7 @@ import cats.Traverse
 import cats.instances.either._
 import cats.instances.stream._
 import cats.instances.vector._
+import io.circe.Json.JObject
 import io.circe.{ Json, JsonNumber, JsonObject }
 import reactivemongo.bson._
 import reactivemongo.bson.exceptions.TypeDoesNotMatch
@@ -111,7 +112,15 @@ trait BsonCodecInstances {
       final def onObject(value: JsonObject): Either[Throwable, BSONValue] =
         Traverse[Vector]
           .traverse(value.toVector) {
-            case (key, json) => json.foldWith(self).right.map(key -> _)
+            case (key, json: JObject) if json.value.contains("$date") =>
+              json.value("$date").flatMap(_.asNumber).flatMap(_.toLong).map(key -> BSONDateTime(_)) match {
+                case Some(bdt) => Right(bdt)
+                case None =>
+                  Left(
+                    TypeDoesNotMatch(
+                      "Unable to convert JsonObject with $date to BSONDateTime, for key: %s".format(key)))
+              }
+            case (key, json) => json.foldWith(self).right.map(key -> (_: BSONValue))
           }
           .right
           .map(BSONDocument(_))
