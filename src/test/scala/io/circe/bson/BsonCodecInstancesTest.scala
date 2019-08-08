@@ -21,7 +21,7 @@ class BsonCodecInstancesTest extends AnyFunSuite with ScalaCheckDrivenPropertyCh
 
   test("BsonCodecInstances should round-trip JSON values") {
     forAll { json: Json =>
-      assert(Right(json) === jsonToBson(json).right.flatMap(bsonToJson))
+      assert(Right(json) === jsonToBson(json).flatMap(bsonToJson))
     }
   }
 }
