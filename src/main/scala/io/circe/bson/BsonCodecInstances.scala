@@ -2,18 +2,36 @@ package io.circe.bson
 
 import cats.Traverse
 import cats.instances.either._
-import cats.instances.stream._
 import cats.instances.vector._
 import io.circe.{ Json, JsonNumber, JsonObject }
 import reactivemongo.bson._
 import reactivemongo.bson.exceptions.TypeDoesNotMatch
-import scala.util.{ Failure, Success }
+import scala.util.{ Failure, Success, Try }
 
 trait BsonCodecInstances {
   private[this] def readerFailure(value: BSONValue): TypeDoesNotMatch =
     TypeDoesNotMatch(
       s"Cannot convert $value: ${value.getClass} to io.circe.Json with io.circe.bson"
     )
+
+  // Cats no longer provides a `Traverse[Stream]` instance.
+  private def traverseTryStream[A, B](s: Stream[Try[A]])(f: A => Either[Throwable, B]): Either[Throwable, Stream[B]] = {
+    val builder = Stream.newBuilder[B]
+    val iterator = s.iterator
+
+    while (iterator.hasNext) {
+      iterator.next match {
+        case Success(a) =>
+          f(a) match {
+            case Right(b) => builder += b
+            case Left(e)  => return Left(e)
+          }
+        case Failure(e) => return Left(e)
+      }
+    }
+
+    Right(builder.result())
+  }
 
   final def bsonToJson(bson: BSONValue): Either[Throwable, Json] = bson match {
     case BSONBoolean(value) => Right(Json.fromBoolean(value))
@@ -37,23 +55,11 @@ trait BsonCodecInstances {
           case Failure(error) => Left(error)
         }
       }
-    case BSONArray(values) =>
-      Traverse[Stream]
-        .traverse(values) {
-          case Success(value) => bsonToJson(value)
-          case Failure(error) => Left(error)
-        }
-        .right
-        .map(Json.fromValues)
-
+    case BSONArray(values) => traverseTryStream(values)(bsonToJson).map(Json.fromValues)
     case BSONDocument(values) =>
-      Traverse[Stream]
-        .traverse(values) {
-          case Success(BSONElement(key, value)) => bsonToJson(value).right.map(key -> _)
-          case Failure(error)                   => Left(error)
-        }
-        .right
-        .map(Json.fromFields)
+      traverseTryStream(values) {
+        case BSONElement(key, value) => bsonToJson(value).map(key -> _)
+      }.map(Json.fromFields)
     case BSONDateTime(value)     => Right(Json.fromLong(value))
     case BSONTimestamp(value)    => Right(Json.fromLong(value))
     case BSONNull                => Right(Json.Null)
@@ -106,14 +112,12 @@ trait BsonCodecInstances {
           .traverse(value) { json =>
             json.foldWith(self)
           }
-          .right
           .map(BSONArray(_))
       final def onObject(value: JsonObject): Either[Throwable, BSONValue] =
         Traverse[Vector]
           .traverse(value.toVector) {
-            case (key, json) => json.foldWith(self).right.map(key -> _)
+            case (key, json) => json.foldWith(self).map(key -> _)
           }
-          .right
           .map(BSONDocument(_))
     }
 
