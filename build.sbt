@@ -12,7 +12,7 @@ val compilerOptions = Seq(
   "-Ywarn-numeric-widen"
 )
 
-val circeVersion = "0.12.0-RC2"
+val circeVersion = "0.12.0-RC3"
 val reactiveMongoVersion = "0.18.4"
 
 val scalaTestVersion = "3.1.0-SNAP13"
