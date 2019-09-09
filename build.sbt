@@ -16,7 +16,7 @@ val circeVersion = "0.12.0-RC4"
 val reactiveMongoVersion = "0.18.5"
 
 val scalaTestVersion = "3.1.0-SNAP13"
-val scalaTestPlusVersion = "1.0.0-SNAP8"
+val scalaTestPlusVersion = "3.1.0.0-RC2"
 
 val previousCirceBsonVersion = "0.3.0"
 
