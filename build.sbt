@@ -13,7 +13,7 @@ val compilerOptions = Seq(
 )
 
 val circeVersion = "0.12.1"
-val reactiveMongoVersion = "0.18.6"
+val reactiveMongoVersion = "0.18.7"
 
 val scalaTestVersion = "3.1.0-SNAP13"
 val scalaTestPlusVersion = "3.1.0.0-RC2"
