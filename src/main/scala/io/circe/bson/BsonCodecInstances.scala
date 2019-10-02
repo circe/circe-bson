@@ -61,7 +61,7 @@ trait BsonCodecInstances {
       traverseTryStream(values) {
         case BSONElement(key, value) => bsonToJson(value).map(key -> _)
       }.map(Json.fromFields)
-    case BSONDateTime(value)     => Right(Json.fromLong(value))
+    case BSONDateTime(value)     => Right(Json.obj("$date" ->Json.fromLong(value)))
     case BSONTimestamp(value)    => Right(Json.fromLong(value))
     case BSONNull                => Right(Json.Null)
     case BSONUndefined           => Right(Json.Null)
