@@ -24,4 +24,9 @@ class BsonCodecInstancesTest extends AnyFunSuite with ScalaCheckDrivenPropertyCh
       assert(Right(json) === jsonToBson(json).flatMap(bsonToJson))
     }
   }
+
+  test("BsonCodecInstances should support BSON Date values") {
+    val json = Json.obj("myDate" -> Json.obj("$date" -> Json.fromLong(1570040789432L)))
+    assert(Right(json) === jsonToBson(json).flatMap(bsonToJson))
+  }
 }
