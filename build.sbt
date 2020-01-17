@@ -64,7 +64,7 @@ val root = project
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-core" % circeVersion,
       "io.circe" %% "circe-testing" % circeVersion % Test,
-      "org.reactivemongo" %% "reactivemongo-bson" % reactiveMongoVersion,
+      "org.reactivemongo" %% "reactivemongo-bson-api" % reactiveMongoVersion,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
       "org.scalatestplus" %% "scalatestplus-scalacheck" % scalaTestPlusVersion % Test
     ),

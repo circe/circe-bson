@@ -1,38 +1,21 @@
 package io.circe.bson
 
 import cats.Traverse
+import cats.syntax.traverse._
 import cats.instances.either._
 import cats.instances.vector._
 import io.circe.Json.JObject
 import io.circe.{ Json, JsonNumber, JsonObject }
-import reactivemongo.bson._
-import reactivemongo.bson.exceptions.TypeDoesNotMatch
-import scala.util.{ Failure, Success, Try }
+import reactivemongo.api.bson._
+import reactivemongo.api.bson.exceptions.HandlerException
+import scala.util.{ Failure, Success }
 
 trait BsonCodecInstances {
-  private[this] def readerFailure(value: BSONValue): TypeDoesNotMatch =
-    TypeDoesNotMatch(
-      s"Cannot convert $value: ${value.getClass} to io.circe.Json with io.circe.bson"
+  private[this] def readerFailure(value: BSONValue): HandlerException =
+    HandlerException(
+      value.getClass.toString,
+      new RuntimeException(s"Cannot convert $value: ${value.getClass} to io.circe.Json with io.circe.bson")
     )
-
-  // Cats no longer provides a `Traverse[Stream]` instance.
-  private def traverseTryStream[A, B](s: Stream[Try[A]])(f: A => Either[Throwable, B]): Either[Throwable, Stream[B]] = {
-    val builder = Stream.newBuilder[B]
-    val iterator = s.iterator
-
-    while (iterator.hasNext) {
-      iterator.next match {
-        case Success(a) =>
-          f(a) match {
-            case Right(b) => builder += b
-            case Left(e)  => return Left(e)
-          }
-        case Failure(e) => return Left(e)
-      }
-    }
-
-    Right(builder.result())
-  }
 
   final def bsonToJson(bson: BSONValue): Either[Throwable, Json] = bson match {
     case BSONBoolean(value) => Right(Json.fromBoolean(value))
@@ -56,28 +39,27 @@ trait BsonCodecInstances {
           case Failure(error) => Left(error)
         }
       }
-    case BSONArray(values) => traverseTryStream(values)(bsonToJson).map(Json.fromValues)
+    case BSONArray(values) => values.map(bsonToJson).toVector.sequence.map(Json.fromValues)
     case BSONDocument(values) =>
-      traverseTryStream(values) {
+      values.toVector.map {
         case BSONElement(key, value) => bsonToJson(value).map(key -> _)
-      }.map(Json.fromFields)
-    case BSONDateTime(value)     => Right(Json.obj("$date" -> Json.fromLong(value)))
-    case BSONTimestamp(value)    => Right(Json.fromLong(value))
-    case BSONNull                => Right(Json.Null)
-    case BSONUndefined           => Right(Json.Null)
-    case BSONSymbol(value)       => Right(Json.fromString(value))
-    case BSONJavaScript(value)   => Right(Json.fromString(value))
-    case BSONJavaScriptWS(value) => Right(Json.fromString(value))
-    case BSONMaxKey              => Left(readerFailure(bson))
-    case BSONMinKey              => Left(readerFailure(bson))
+      }.sequence.map(Json.fromFields)
+    case BSONDateTime(value)        => Right(Json.obj("$date" -> Json.fromLong(value)))
+    case BSONTimestamp(value)       => Right(Json.fromLong(value))
+    case BSONNull                   => Right(Json.Null)
+    case BSONUndefined              => Right(Json.Null)
+    case BSONSymbol(value)          => Right(Json.fromString(value))
+    case BSONJavaScript(value)      => Right(Json.fromString(value))
+    case BSONJavaScriptWS(key, doc) => bsonToJson(doc).map(j => Json.obj(key -> j))
+    case BSONMaxKey                 => Left(readerFailure(bson))
+    case BSONMinKey                 => Left(readerFailure(bson))
     case id: BSONObjectID =>
       BSONObjectID.parse(id.stringify) match {
         case Success(value) => Right(Json.fromString(value.stringify))
         case Failure(error) => Left(error)
       }
-    case BSONBinary(_, _)    => Left(readerFailure(bson))
-    case BSONDBPointer(_, _) => Left(readerFailure(bson))
-    case BSONRegex(_, _)     => Left(readerFailure(bson))
+    case BSONBinary(_)   => Left(readerFailure(bson))
+    case BSONRegex(_, _) => Left(readerFailure(bson))
   }
 
   private[this] lazy val jsonFolder: Json.Folder[Either[Throwable, BSONValue]] =
@@ -122,7 +104,9 @@ trait BsonCodecInstances {
                 case Some(bdt) => Right(bdt)
                 case None =>
                   Left(
-                    TypeDoesNotMatch("Unable to convert JsonObject with $date to BSONDateTime, for key: %s".format(key))
+                    new RuntimeException(
+                      "Unable to convert JsonObject with $date to BSONDateTime, for key: %s".format(key)
+                    )
                   )
               }
             case (key, json) => json.foldWith(self).map(key -> _)
@@ -132,18 +116,7 @@ trait BsonCodecInstances {
 
   final def jsonToBson(json: Json): Either[Throwable, BSONValue] = json.foldWith(jsonFolder)
 
-  implicit final lazy val jsonBsonReader: BSONReader[BSONValue, Json] = new BSONReader[BSONValue, Json] {
-    final def read(bson: BSONValue): Json = bsonToJson(bson) match {
-      case Right(value) => value
-      case Left(error)  => throw error
-    }
-  }
+  implicit final lazy val jsonBsonReader: BSONReader[Json] = bsonToJson(_).toTry
 
-  implicit final lazy val jsonBsonWriter: BSONWriter[Json, BSONValue] =
-    new BSONWriter[Json, BSONValue] {
-      def write(json: Json): BSONValue = jsonToBson(json) match {
-        case Right(value) => value
-        case Left(error)  => throw error
-      }
-    }
+  implicit final lazy val jsonBsonWriter: BSONWriter[Json] = jsonToBson(_).toTry
 }

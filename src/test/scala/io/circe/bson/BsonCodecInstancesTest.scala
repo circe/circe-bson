@@ -4,7 +4,7 @@ import io.circe.{ Json, JsonNumber }
 import io.circe.testing.ArbitraryInstances
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import reactivemongo.bson.BSONDecimal
+import reactivemongo.api.bson.BSONDecimal
 import scala.util.{ Failure, Success, Try }
 
 class BsonCodecInstancesTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks with ArbitraryInstances {
