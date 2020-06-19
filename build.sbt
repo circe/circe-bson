@@ -15,7 +15,7 @@ val compilerOptions = Seq(
 val circeVersion = "0.13.0"
 val reactiveMongoVersion = "0.20.11"
 
-val scalaTestVersion = "3.1.2"
+val scalaTestVersion = "3.2.0"
 val scalaTestPlusVersion = "3.1.0.0-RC2"
 
 val previousCirceBsonVersion = "0.3.0"
