@@ -1,4 +1,21 @@
-organization in ThisBuild := "io.circe"
+ThisBuild / organization := "io.circe"
+ThisBuild / crossScalaVersions := Seq("2.12.14", "2.13.6")
+ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8")
+ThisBuild / githubWorkflowPublishTargetBranches := Nil
+ThisBuild / githubWorkflowBuild := Seq(
+  WorkflowStep.Sbt(
+    List("clean", "coverage", "test", "coverageReport", "scalafmtCheckAll"),
+    id = None,
+    name = Some("Test")
+  ),
+  WorkflowStep.Use(
+    UseRef.Public(
+      "codecov",
+      "codecov-action",
+      "v1"
+    )
+  )
+)
 
 val compilerOptions = Seq(
   "-deprecation",
@@ -16,9 +33,9 @@ val circeVersion = "0.14.1"
 val reactiveMongoVersion = "1.0.4"
 
 val scalaTestVersion = "3.2.9"
-val scalaTestPlusVersion = "3.1.0.0-RC2"
+val scalaTestPlusVersion = "3.2.9.0"
 
-val previousCirceBsonVersion = "0.3.0"
+val previousCirceBsonVersion = "0.5.0"
 
 def priorTo2_13(scalaVersion: String): Boolean =
   CrossVersion.partialVersion(scalaVersion) match {
@@ -41,14 +58,14 @@ val baseSettings = Seq(
         "-Ywarn-unused:imports"
       )
   ),
-  scalacOptions in (Compile, console) ~= {
+  Compile / console / scalacOptions ~= {
     _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
   },
-  scalacOptions in (Test, console) ~= {
+  Test / console / scalacOptions ~= {
     _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
   },
   coverageHighlighting := true,
-  (scalastyleSources in Compile) ++= (unmanagedSourceDirectories in Compile).value
+  (Compile / scalastyleSources) ++= (Compile / unmanagedSourceDirectories).value
 )
 
 val allSettings = baseSettings ++ publishSettings
@@ -66,11 +83,11 @@ val root = project
       "io.circe" %% "circe-testing" % circeVersion % Test,
       "org.reactivemongo" %% "reactivemongo-bson-api" % reactiveMongoVersion,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-      "org.scalatestplus" %% "scalatestplus-scalacheck" % scalaTestPlusVersion % Test
+      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestPlusVersion % Test
     ),
     ghpagesNoJekyll := true,
     docMappingsApiDir := "api",
-    addMappingsToSiteDir(mappings in (Compile, packageDoc), docMappingsApiDir)
+    addMappingsToSiteDir(Compile / packageDoc / mappings, docMappingsApiDir)
   )
 
 lazy val publishSettings = Seq(
@@ -80,7 +97,7 @@ lazy val publishSettings = Seq(
   homepage := Some(url("https://github.com/circe/circe-bson")),
   licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := { _ =>
     false
   },
