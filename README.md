@@ -1,6 +1,6 @@
 # circe-bson
 
-[![Build status](https://img.shields.io/travis/circe/circe-bson/master.svg)](https://travis-ci.org/circe/circe-bson)
+[![Build status](https://img.shields.io/github/workflow/status/circe/circe-bson/Continuous%20Integration.svg)](https://github.com/circe/circe-bson/actions)
 [![Coverage status](https://img.shields.io/codecov/c/github/circe/circe-bson/master.svg)](https://codecov.io/github/circe/circe-bson)
 [![Gitter](https://img.shields.io/badge/gitter-join%20chat-green.svg)](https://gitter.im/circe/circe)
 [![Maven Central](https://img.shields.io/maven-central/v/io.circe/circe-bson_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/io.circe/circe-bson_2.12)
