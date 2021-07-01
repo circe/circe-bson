@@ -41,8 +41,8 @@ trait BsonCodecInstances {
       }
     case BSONArray(values) => values.map(bsonToJson).toVector.sequence.map(Json.fromValues)
     case BSONDocument(values) =>
-      values.toVector.map {
-        case BSONElement(key, value) => bsonToJson(value).map(key -> _)
+      values.toVector.map { case BSONElement(key, value) =>
+        bsonToJson(value).map(key -> _)
       }.sequence.map(Json.fromFields)
     case BSONDateTime(value)        => Right(Json.obj("$date" -> Json.fromLong(value)))
     case BSONTimestamp(value)       => Right(Json.fromLong(value))
