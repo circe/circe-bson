@@ -10,8 +10,7 @@ import scala.util.{ Failure, Success, Try }
 class BsonCodecInstancesTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks with ArbitraryInstances {
 
   /**
-   * Note that we zero out JSON number values whose string representation can't
-   * be parsed by `BSONDecimal`.
+   * Note that we zero out JSON number values whose string representation can't be parsed by `BSONDecimal`.
    */
   override def transformJsonNumber(n: JsonNumber): JsonNumber =
     Try(BSONDecimal.parse(n.toString)).flatten match {
