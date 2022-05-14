@@ -39,8 +39,8 @@ val previousCirceBsonVersion = "0.5.0"
 
 def priorTo2_13(scalaVersion: String): Boolean =
   CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, minor)) if minor < 13 => true
-    case _                              => false
+    case Some(2, minor) if minor < 13 => true
+    case _                            => false
   }
 
 val baseSettings = Seq(
@@ -65,7 +65,7 @@ val baseSettings = Seq(
     _.filterNot(Set("-Ywarn-unused-import", "-Ywarn-unused:imports"))
   },
   coverageHighlighting := true,
-  (Compile / scalastyleSources) ++= (Compile / unmanagedSourceDirectories).value
+  Compile / scalastyleSources ++= (Compile / unmanagedSourceDirectories).value
 )
 
 val allSettings = baseSettings ++ publishSettings
