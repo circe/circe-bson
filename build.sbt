@@ -33,7 +33,7 @@ val circeVersion = "0.14.1"
 val reactiveMongoVersion = "1.0.7"
 
 val scalaTestVersion = "3.2.19"
-val scalaTestPlusVersion = "3.2.11.0"
+val scalaTestPlusVersion = "3.2.14.0"
 
 val previousCirceBsonVersion = "0.5.0"
 
@@ -83,7 +83,7 @@ val root = project
       "io.circe" %% "circe-testing" % circeVersion % Test,
       "org.reactivemongo" %% "reactivemongo-bson-api" % reactiveMongoVersion,
       "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
-      "org.scalatestplus" %% "scalacheck-1-15" % scalaTestPlusVersion % Test
+      "org.scalatestplus" %% "scalacheck-1-16" % scalaTestPlusVersion % Test
     ),
     ghpagesNoJekyll := true,
     docMappingsApiDir := "api",
